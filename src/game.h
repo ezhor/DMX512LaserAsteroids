@@ -8,7 +8,7 @@
 #define GAME_H
 
 #include <vector>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "randomnumber.h"
 #include "medialayer.h"
 #include "gameobject.h"

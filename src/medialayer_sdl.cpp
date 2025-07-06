@@ -3,14 +3,14 @@
  */
 
 #include <vector>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "medialayer_sdl.h"
 
 // --------------------------------------------------
 // Public
 
 /* function: initialize()
- * 
+ *
  */
 bool MediaLayer_SDL::initialize(){
 
@@ -18,8 +18,8 @@ bool MediaLayer_SDL::initialize(){
     if(!create_window())
     {
         return false;
-    } 
-    
+    }
+
     // Create Rendering context
     if (!create_renderer())
     {
@@ -30,7 +30,7 @@ bool MediaLayer_SDL::initialize(){
 }
 
 /* function: initialize()
- * 
+ *
  */
 bool MediaLayer_SDL::initialize(int window_width, int window_height, int window_x, int window_y){
 
@@ -54,7 +54,7 @@ bool MediaLayer_SDL::initialize(int window_width, int window_height){
 }
 
 /* function: shutdown()
- * 
+ *
  */
 void MediaLayer_SDL::shutdown(){
     SDL_DestroyRenderer(_renderer);
@@ -65,7 +65,7 @@ void MediaLayer_SDL::shutdown(){
 }
 
 /* function: create_window()
- * 
+ *
  */
 bool MediaLayer_SDL::create_window(){
 
@@ -75,17 +75,17 @@ bool MediaLayer_SDL::create_window(){
                                _window_width,
                                _window_height,
                                _sdl_flag);
-  if(!_window){
-    SDL_Log("Failed to create window: %s", SDL_GetError());
-    // Throw exception
-    return false;
-  };
+    if(!_window){
+        SDL_Log("Failed to create window: %s", SDL_GetError());
+        // Throw exception
+        return false;
+    };
 
-  return true;
+    return true;
 }
 
 /* function: create_renderer()
- * 
+ *
  */
 bool MediaLayer_SDL::create_renderer(){
     // create renderer
@@ -105,7 +105,7 @@ bool MediaLayer_SDL::create_renderer(){
 }
 
 /* function: get_input()
- * 
+ *
  */
 std::vector<Medialayer_Key_Code> MediaLayer_SDL::get_input(){
     std::vector<Medialayer_Key_Code> key_codes;
@@ -147,7 +147,7 @@ std::vector<Medialayer_Key_Code> MediaLayer_SDL::get_input(){
 }
 
 /** function: add_key_code()
- * 
+ *
  */
 void MediaLayer_SDL::add_key_code(std::vector<Medialayer_Key_Code>& key_codes, Medialayer_Key_Code key_code){
     // Check if key is already in the vector
@@ -160,7 +160,7 @@ void MediaLayer_SDL::add_key_code(std::vector<Medialayer_Key_Code>& key_codes, M
 }
 
 /* function: render_objects()
- * 
+ *
  */
 void MediaLayer_SDL::render_objects(){
 
@@ -174,39 +174,45 @@ void MediaLayer_SDL::render_objects(){
 }
 
 /** function: draw_shape()
- * 
  *
+ * Draws a given shape (vector of Vector2d points) using SDL_RenderDrawLines.
+ * Converts Vector2d points to SDL_Point and closes the shape.
  */
 void MediaLayer_SDL::draw_shape(std::vector<Vector2d> shape){
     if(shape.size() < 3){
         // not a shape
-        SDL_Log("Not a shape");
+        SDL_Log("Not a shape (requires at least 3 points)");
         return;
     }
 
     SDL_SetRenderDrawColor(_renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
 
-    int size = shape.size() + 1;
-    SDL_Point points[size];
+    // Use std::vector for dynamic array management (standard C++ practice)
+    std::vector<SDL_Point> points;
+    points.reserve(shape.size() + 1); // Reserve space for efficiency
+
+    // Convert Vector2d points to SDL_Point and add to vector
     for(int i = 0; i < shape.size(); ++i){
-        points[i] = convert_point(shape[i]);
+        points.push_back(convert_point(shape[i]));
     }
 
-    // Close shape by connecting to the beginning
-    points[size - 1] = convert_point(shape[0]);
+    // Close shape by connecting the last point to the first point
+    points.push_back(convert_point(shape[0]));
 
-    SDL_RenderDrawLines(_renderer, points, size);
+    // Render the lines using the data from the std::vector
+    // points.data() returns a pointer to the underlying C-style array
+    SDL_RenderDrawLines(_renderer, points.data(), static_cast<int>(points.size()));
 }
 
 /** function: convert_point()
- * 
+ *
  */
 SDL_Point MediaLayer_SDL::convert_point(Vector2d point){
     return SDL_Point{static_cast<int>(point.x), static_cast<int>(point.y)};
 }
 
 /* function: generate_output()
- * 
+ *
  */
 void MediaLayer_SDL::generate_output(){
     SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 0);
@@ -215,13 +221,13 @@ void MediaLayer_SDL::generate_output(){
     // Render Game Objects ------------------------------
     render_objects();
     // --------------------------------------------------
-    
+
     SDL_RenderPresent(_renderer);
 }
 
 /* function: delta_time()
  * Returns delta time in seconds
- * 
+ *
  */
 double MediaLayer_SDL::get_delta_time(){
     double delta = (SDL_GetTicks() - _ticks_count) / 1000.0;

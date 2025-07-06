@@ -8,7 +8,7 @@
 #define MEDIALAYER_SDL
 
 #include <vector>
-#include <SDL2/SDL.h> // hopefully this is contained
+#include <SDL.h> // hopefully this is contained
 #include "medialayer.h"
 
 class MediaLayer_SDL: public MediaLayer{
